@@ -7,7 +7,7 @@ import PortfolioDashboard from './components/PortfolioDashboard';
 
 export default function Home() {
   return (
-    <div>
+    <div className='bg-white'>
       <Navbar />
       <HeroSection />
       <PortfolioDashboard />
