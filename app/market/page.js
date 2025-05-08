@@ -7,8 +7,8 @@ export default function MarketPage() {
   const [coins, setCoins] = useState([])
   const [prices, setPrices] = useState({})
   const [searchTerm, setSearchTerm] = useState('')
-  const [sortedBy, setSortedBy] = useState('price')
-  const [sortDirection, setSortDirection] = useState('desc')
+  const [sortedBy, setSortedBy] = useState('name')
+  const [sortDirection, setSortDirection] = useState('asc')
   
   const [currentPage, setCurrentPage] = useState(1)
   const coinsPerPage = 10
@@ -61,8 +61,14 @@ export default function MarketPage() {
     const aPrice = prices[a.Symbol]?.USD || 0
     const bPrice = prices[b.Symbol]?.USD || 0
 
-
-    return sortDirection === 'asc' ? comparison : -comparison
+    if (sortedBy === 'name') {
+      return sortDirection === 'asc'
+        ? a.CoinName.localeCompare(b.CoinName)
+        : b.CoinName.localeCompare(a.CoinName)
+    } else if (sortedBy === 'price') {
+      return sortDirection === 'asc' ? aPrice - bPrice : bPrice - aPrice
+    }
+    return 0
   })
 
   const totalPages = Math.ceil(sortedCoins.length / coinsPerPage)
@@ -93,9 +99,8 @@ export default function MarketPage() {
             onChange={(e) => handleSort(e.target.value)}
             className="px-4 py-2 bg-gray-700 text-white rounded"
           >
+            <option value="name">Sort by Name</option>
             <option value="price">Sort by Price</option>
-            <option value="change">Sort by 24h Change</option>
-            <option value="marketCap">Sort by Market Cap</option>
           </select>
           <button
             onClick={toggleSortDirection}
@@ -111,8 +116,6 @@ export default function MarketPage() {
             <tr className="text-left">
               <th className="p-4">Coin</th>
               <th className="p-4">Price</th>
-              <th className="p-4">Change (24h)</th>
-              <th className="p-4">Market Cap</th>
             </tr>
           </thead>
           <tbody>
@@ -132,12 +135,11 @@ export default function MarketPage() {
                   <td className="p-4">
                     {prices[coin.Symbol]?.USD ? `$${prices[coin.Symbol].USD}` : 'Loading...'}
                   </td>
-                  
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="4" className="p-4 text-center">Loading...</td>
+                <td colSpan="2" className="p-4 text-center">Loading...</td>
               </tr>
             )}
           </tbody>
