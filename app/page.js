@@ -19,20 +19,31 @@ export default function HomePage() {
   const [chartData, setChartData] = useState(null)
 
   useEffect(() => {
+    const coinSymbols = ['BTC', 'ETH', 'BNB', 'ADA', 'SOL', 'XRP']
+    const fsyms = coinSymbols.join(',')
+    const tsyms = 'USD'
+
     axios
-      .get('https://min-api.cryptocompare.com/data/top/mktcapfull?limit=6&tsym=USD', {
+      .get(`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${fsyms}&tsyms=${tsyms}`, {
         headers: {
           authorization: 'Apikey 664c6e6238f8fea8752b1c0b10fbe1a36497b9d0379ae92f71c7a2f8f1a6d573'
         }
       })
       .then((res) => {
-        const coins = res.data.Data.map((coin) => ({
-          name: coin.CoinInfo.FullName,
-          symbol: coin.CoinInfo.Name,
-          price: coin.RAW.USD.PRICE,
-          imageUrl: `https://www.cryptocompare.com${coin.CoinInfo.ImageUrl}`
+        const raw = res.data.RAW
+        const display = res.data.DISPLAY
+
+        const coins = Object.keys(raw).map((symbol) => ({
+          symbol,
+          name: display[symbol]?.USD?.FROMSYMBOL || symbol,
+          price: raw[symbol].USD.PRICE,
+          imageUrl: `https://www.cryptocompare.com${raw[symbol].USD.IMAGEURL}`
         }))
+
         setTopCoins(coins)
+      })
+      .catch((err) => {
+        console.error('Error fetching coin data:', err)
       })
 
     axios
@@ -57,6 +68,9 @@ export default function HomePage() {
           ]
         })
       })
+      .catch((err) => {
+        console.error('Error fetching BTC history:', err)
+      })
   }, [])
 
   return (
@@ -66,25 +80,31 @@ export default function HomePage() {
       <div>
         <h1 className="text-3xl font-bold mb-4">Top Coins</h1>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {topCoins.map((coin) => (
-            <div
-              key={coin.symbol}
-              className="bg-gray-800 p-4 rounded shadow hover:shadow-lg transition"
-            >
-              <div className="flex items-center mb-4">
-                <img
-                  src={coin.imageUrl}
-                  alt={coin.name}
-                  className="w-10 h-10 mr-3 rounded-full"
-                />
-                <div>
-                  <h2 className="text-lg font-semibold">{coin.name}</h2>
-                  <p className="text-sm text-gray-400">{coin.symbol}</p>
+          {topCoins.length > 0 ? (
+            topCoins.map((coin) => (
+              <div
+                key={coin.symbol}
+                className="bg-gray-800 p-4 rounded-lg shadow-lg hover:shadow-2xl transition"
+              >
+                
+                <div className="flex justify-center mb-4">
+                  <img
+                    src={coin.imageUrl}
+                    alt={coin.name}
+                    className="w-20 h-20 rounded-full"
+                  />
                 </div>
+
+               
+                <h2 className="text-lg text-center font-semibold text-white mb-2">{coin.name}</h2>
+
+                
+                <p className="text-center text-xl text-green-400">${coin.price.toFixed(2)}</p>
               </div>
-              <p className="text-green-400 text-xl">${coin.price.toFixed(2)}</p>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-gray-400 text-center">Loading selected coins...</p>
+          )}
         </div>
       </div>
 

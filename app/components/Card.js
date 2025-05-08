@@ -1,9 +1,10 @@
 export default function Card() {
   return (
-    <section className="bg-blue-600 text-white py-16">
-      <div className="max-w-4xl mx-auto px-4 text-center">
-        <h1 className="text-4xl font-bold mb-4">Track Crypto Prices in Real-Time</h1>
-        <p className="text-lg mb-6">
+    <section className="bg-gradient-to-r from-blue-700 to-indigo-700 text-white py-20 shadow-md rounded-md">
+      <div className="max-w-5xl mx-auto px-6 text-center space-y-4">
+         <h1 className="text-5xl font-extrabold"> Track Crypto Prices in Real-Time
+        </h1>
+        <p className="text-lg text-blue-100 leading-relaxed">
           Stay updated with the latest prices, market trends, and crypto news – all in one place.
         </p>
       </div>

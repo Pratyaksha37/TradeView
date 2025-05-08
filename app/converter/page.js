@@ -11,7 +11,6 @@ export default function ConverterPage() {
   const [exchangeRates, setExchangeRates] = useState({})
   const [loading, setLoading] = useState(false)
 
-  
   useEffect(() => {
     const fetchExchangeRates = async () => {
       setLoading(true)
@@ -27,8 +26,8 @@ export default function ConverterPage() {
     }
 
     fetchExchangeRates()
-  }, [fromCurrency, toCurrency]) 
-  
+  }, [fromCurrency, toCurrency])
+
   useEffect(() => {
     if (amount > 0 && exchangeRates[fromCurrency] && exchangeRates[fromCurrency][toCurrency]) {
       const rate = exchangeRates[fromCurrency][toCurrency]
@@ -36,17 +35,21 @@ export default function ConverterPage() {
     }
   }, [amount, fromCurrency, toCurrency, exchangeRates])
 
+  const handleAmountChange = (e) => {
+    const value = Math.max(1, parseFloat(e.target.value)); 
+    setAmount(value);
+  }
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-900">
       <div className="bg-gray-800 p-8 rounded-xl w-96">
         <h2 className="text-2xl font-semibold text-center text-white mb-6">Crypto Converter</h2>
         <div className="space-y-4">
-         
           <div className="flex space-x-4">
             <input
               type="number"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={handleAmountChange}
               className="flex-1 p-2 rounded border border-gray-700 bg-gray-700 text-white"
             />
             <select
