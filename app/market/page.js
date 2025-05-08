@@ -60,15 +60,7 @@ export default function MarketPage() {
   const sortedCoins = filteredCoins.sort((a, b) => {
     const aPrice = prices[a.Symbol]?.USD || 0
     const bPrice = prices[b.Symbol]?.USD || 0
-    let comparison = 0
 
-    if (sortedBy === 'price') {
-      comparison = aPrice - bPrice
-    } else if (sortedBy === 'change') {
-      comparison = Math.random() > 0.5 ? 1 : -1
-    } else if (sortedBy === 'marketCap') {
-      comparison = Math.random() > 0.5 ? 1 : -1 
-    }
 
     return sortDirection === 'asc' ? comparison : -comparison
   })
@@ -93,7 +85,7 @@ export default function MarketPage() {
             placeholder="Search coins..."
             value={searchTerm}
             onChange={handleSearch}
-            className="p-2 rounded bg-gray-800 text-white border border-gray-700 w-96" // Increased width for the search bar
+            className="p-2 rounded bg-gray-800 text-white border border-gray-700 w-96" 
           />
         </div>
         <div className="flex space-x-4 items-center">
@@ -140,12 +132,7 @@ export default function MarketPage() {
                   <td className="p-4">
                     {prices[coin.Symbol]?.USD ? `$${prices[coin.Symbol].USD}` : 'Loading...'}
                   </td>
-                  <td className="p-4">
-                    {Math.random() > 0.5 ? '+5.2%' : '-2.4%'}
-                  </td>
-                  <td className="p-4">
-                    {Math.random() > 0.5 ? '$10B' : '$5B'}
-                  </td>
+                  
                 </tr>
               ))
             ) : (

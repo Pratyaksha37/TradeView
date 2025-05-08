@@ -1,6 +1,6 @@
 export default function Card() {
   return (
-    <section className="bg-gradient-to-r from-blue-700 to-indigo-700 text-white py-20 shadow-md rounded-md">
+    <section className="bg-gradient-to-r from-blue-700 to-indigo-700 text-white py-20 shadow-md rounded-xl">
       <div className="max-w-5xl mx-auto px-6 text-center space-y-4">
          <h1 className="text-5xl font-extrabold"> Track Crypto Prices in Real-Time
         </h1>
