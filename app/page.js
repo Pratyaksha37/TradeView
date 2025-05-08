@@ -29,7 +29,8 @@ export default function HomePage() {
         const coins = res.data.Data.map((coin) => ({
           name: coin.CoinInfo.FullName,
           symbol: coin.CoinInfo.Name,
-          price: coin.RAW.USD.PRICE
+          price: coin.RAW.USD.PRICE,
+          imageUrl: `https://www.cryptocompare.com${coin.CoinInfo.ImageUrl}`
         }))
         setTopCoins(coins)
       })
@@ -60,9 +61,9 @@ export default function HomePage() {
 
   return (
     <div className="space-y-10">
-      <Card/>
+      <Card />
+
       <div>
-        
         <h1 className="text-3xl font-bold mb-4">Top Coins</h1>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {topCoins.map((coin) => (
@@ -70,8 +71,17 @@ export default function HomePage() {
               key={coin.symbol}
               className="bg-gray-800 p-4 rounded shadow hover:shadow-lg transition"
             >
-              <h2 className="text-lg font-semibold">{coin.name}</h2>
-              <p className="text-sm text-gray-400">{coin.symbol}</p>
+              <div className="flex items-center mb-4">
+                <img
+                  src={coin.imageUrl}
+                  alt={coin.name}
+                  className="w-10 h-10 mr-3 rounded-full"
+                />
+                <div>
+                  <h2 className="text-lg font-semibold">{coin.name}</h2>
+                  <p className="text-sm text-gray-400">{coin.symbol}</p>
+                </div>
+              </div>
               <p className="text-green-400 text-xl">${coin.price.toFixed(2)}</p>
             </div>
           ))}
@@ -82,7 +92,31 @@ export default function HomePage() {
         <h2 className="text-2xl font-bold mb-4">Bitcoin Price (30 Days)</h2>
         <div className="bg-gray-800 p-6 rounded">
           {chartData ? (
-            <Line data={chartData} options={{ responsive: true, plugins: { legend: { labels: { color: 'white' } } }, scales: { x: { ticks: { color: 'white' } }, y: { ticks: { color: 'white' } } } }} />
+            <Line
+              data={chartData}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: {
+                    labels: {
+                      color: 'white'
+                    }
+                  }
+                },
+                scales: {
+                  x: {
+                    ticks: {
+                      color: 'white'
+                    }
+                  },
+                  y: {
+                    ticks: {
+                      color: 'white'
+                    }
+                  }
+                }
+              }}
+            />
           ) : (
             <p className="text-gray-400">Loading chart...</p>
           )}

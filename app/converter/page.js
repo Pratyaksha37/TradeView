@@ -1,77 +1,96 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 
 export default function ConverterPage() {
-  const [coinList, setCoinList] = useState([])
-  const [fromCoin, setFromCoin] = useState('BTC')
-  const [toCoin, setToCoin] = useState('USD')
+  const [fromCurrency, setFromCurrency] = useState('BTC')
+  const [toCurrency, setToCurrency] = useState('USD')
   const [amount, setAmount] = useState(1)
-  const [converted, setConverted] = useState(null)
+  const [convertedAmount, setConvertedAmount] = useState(null)
+  const [exchangeRates, setExchangeRates] = useState({})
+  const [loading, setLoading] = useState(false)
 
+  
   useEffect(() => {
-    axios
-      .get('https://min-api.cryptocompare.com/data/all/coinlist')
-      .then((res) => {
-        const list = Object.keys(res.data.Data).slice(0, 100)
-        setCoinList(list)
-      })
-  }, [])
-
-  useEffect(() => {
-    if (fromCoin && toCoin && amount) {
-      axios
-        .get(`https://min-api.cryptocompare.com/data/price?fsym=${fromCoin}&tsyms=${toCoin}`, {
-          headers: {
-            authorization: 'Apikey 664c6e6238f8fea8752b1c0b10fbe1a36497b9d0379ae92f71c7a2f8f1a6d573'
-          }
-        })
-        .then((res) => {
-          if (res.data[toCoin]) {
-            setConverted(res.data[toCoin] * amount)
-          } else {
-            setConverted('Error fetching data')
-          }
-        })
+    const fetchExchangeRates = async () => {
+      setLoading(true)
+      try {
+        const response = await axios.get(
+          `https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,ETH,LTC&tsyms=USD,EUR,INR&apiKey=664c6e6238f8fea8752b1c0b10fbe1a36497b9d0379ae92f71c7a2f8f1a6d573`
+        )
+        setExchangeRates(response.data)
+      } catch (error) {
+        console.error('Error fetching exchange rates:', error)
+      }
+      setLoading(false)
     }
-  }, [fromCoin, toCoin, amount])
+
+    fetchExchangeRates()
+  }, [fromCurrency, toCurrency]) 
+  
+  useEffect(() => {
+    if (amount > 0 && exchangeRates[fromCurrency] && exchangeRates[fromCurrency][toCurrency]) {
+      const rate = exchangeRates[fromCurrency][toCurrency]
+      setConvertedAmount(amount * rate)
+    }
+  }, [amount, fromCurrency, toCurrency, exchangeRates])
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Coin Converter</h1>
-      <div className="flex gap-4 mb-4">
-        <input
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="p-2 rounded bg-gray-700 text-white"
-        />
-        <select
-          value={fromCoin}
-          onChange={(e) => setFromCoin(e.target.value)}
-          className="p-2 rounded bg-gray-700 text-white"
-        >
-          {coinList.map((coin) => (
-            <option key={coin}>{coin}</option>
-          ))}
-        </select>
-        <select
-          value={toCoin}
-          onChange={(e) => setToCoin(e.target.value)}
-          className="p-2 rounded bg-gray-700 text-white"
-        >
-          <option>USD</option>
-          {coinList.map((coin) => (
-            <option key={coin}>{coin}</option>
-          ))}
-        </select>
+    <div className="flex justify-center items-center min-h-screen bg-gray-900">
+      <div className="bg-gray-800 p-8 rounded-xl w-96">
+        <h2 className="text-2xl font-semibold text-center text-white mb-6">Crypto Converter</h2>
+        <div className="space-y-4">
+         
+          <div className="flex space-x-4">
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="flex-1 p-2 rounded border border-gray-700 bg-gray-700 text-white"
+            />
+            <select
+              value={fromCurrency}
+              onChange={(e) => setFromCurrency(e.target.value)}
+              className="p-2 rounded border border-gray-700 bg-gray-700 text-white"
+            >
+              <option value="BTC">BTC</option>
+              <option value="ETH">ETH</option>
+              <option value="LTC">LTC</option>
+            </select>
+          </div>
+
+          <div className="flex space-x-4">
+            <select
+              value={toCurrency}
+              onChange={(e) => setToCurrency(e.target.value)}
+              className="flex-1 p-2 rounded border border-gray-700 bg-gray-700 text-white"
+            >
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="INR">INR</option>
+            </select>
+            <button
+              onClick={() => setAmount(amount)} 
+              className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-500"
+            >
+              Convert
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="text-center text-white mt-4">Loading...</div>
+          ) : (
+            convertedAmount !== null && (
+              <div className="text-center text-white mt-4">
+                <p>
+                  {amount} {fromCurrency} = {convertedAmount.toFixed(2)} {toCurrency}
+                </p>
+              </div>
+            )
+          )}
+        </div>
       </div>
-      {converted !== null && (
-        <p className="text-xl text-green-400">
-          {amount} {fromCoin} = {converted.toFixed(4)} {toCoin}
-        </p>
-      )}
     </div>
   )
 }
