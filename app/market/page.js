@@ -1,68 +1,149 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 
 export default function MarketPage() {
   const [coins, setCoins] = useState([])
-  const [search, setSearch] = useState('')
-  const [sort, setSort] = useState('desc')
+  const [prices, setPrices] = useState({})
+  const [searchTerm, setSearchTerm] = useState('')
+  const [sortedBy, setSortedBy] = useState('price')
+  const [sortDirection, setSortDirection] = useState('asc')
 
   useEffect(() => {
-    axios
-      .get('https://min-api.cryptocompare.com/data/top/mktcapfull?limit=50&tsym=USD', {
-        headers: {
-          authorization: 'Apikey 664c6e6238f8fea8752b1c0b10fbe1a36497b9d0379ae92f71c7a2f8f1a6d573'
-        }
-      })
-      .then((res) => {
-        const rawData = res.data.Data || []
-        const data = rawData.map((coin) => ({
-          name: coin.CoinInfo?.FullName || '',
-          symbol: coin.CoinInfo?.Name || '',
-          price: coin.RAW?.USD?.PRICE || 0
-        }))
-        setCoins(data)
-      })
+    const fetchCoins = async () => {
+      try {
+        const coinListResponse = await axios.get(
+          'https://min-api.cryptocompare.com/data/all/coinlist?apiKey=664c6e6238f8fea8752b1c0b10fbe1a36497b9d0379ae92f71c7a2f8f1a6d573'
+        )
+        setCoins(Object.values(coinListResponse.data.Data))
+      } catch (error) {
+        console.error('Error fetching coin list:', error)
+      }
+    }
+
+    const fetchPrices = async () => {
+      try {
+        const pricesResponse = await axios.get(
+          'https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC,ETH,LTC,XRP&tsyms=USD,EUR&apiKey=664c6e6238f8fea8752b1c0b10fbe1a36497b9d0379ae92f71c7a2f8f1a6d573'
+        )
+        setPrices(pricesResponse.data)
+      } catch (error) {
+        console.error('Error fetching prices:', error)
+      }
+    }
+
+    fetchCoins()
+    fetchPrices()
   }, [])
 
-  const filtered = coins
-    .filter((coin) =>
-      coin.name.toLowerCase().includes(search.toLowerCase()) ||
-      coin.symbol.toLowerCase().includes(search.toLowerCase())
-    )
-    .sort((a, b) =>
-      sort === 'asc' ? a.price - b.price : b.price - a.price
-    )
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value)
+  }
+
+  const handleSort = (key) => {
+    setSortedBy(key)
+  }
+
+  const toggleSortDirection = () => {
+    setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+  }
+
+  const filteredCoins = coins.filter(coin =>
+    coin.CoinName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    coin.Symbol.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const sortedCoins = filteredCoins.sort((a, b) => {
+    const aPrice = prices[a.Symbol]?.USD || 0
+    const bPrice = prices[b.Symbol]?.USD || 0
+    let comparison = 0
+
+    if (sortedBy === 'price') {
+      comparison = aPrice - bPrice
+    } else if (sortedBy === 'change') {
+      comparison = Math.random() > 0.5 ? 1 : -1 // Replace with real change data
+    } else if (sortedBy === 'marketCap') {
+      comparison = Math.random() > 0.5 ? 1 : -1 // Replace with real market cap data
+    }
+
+    return sortDirection === 'asc' ? comparison : -comparison
+  })
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Market</h1>
-      <div className="flex flex-col md:flex-row gap-4 mb-4">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search coin..."
-          className="p-2 bg-gray-700 text-white rounded w-full"
-        />
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value)}
-          className="p-2 bg-gray-700 text-white rounded"
-        >
-          <option value="desc">Price ↓</option>
-          <option value="asc">Price ↑</option>
-        </select>
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center space-x-4">
+          <input
+            type="text"
+            placeholder="Search coins..."
+            value={searchTerm}
+            onChange={handleSearch}
+            className="p-2 rounded bg-gray-800 text-white border border-gray-700 w-96" // Increased width for the search bar
+          />
+        </div>
+        <div className="flex space-x-4 items-center">
+          <select
+            onChange={(e) => handleSort(e.target.value)}
+            className="px-4 py-2 bg-gray-700 text-white rounded"
+          >
+            <option value="price">Sort by Price</option>
+            <option value="change">Sort by 24h Change</option>
+            <option value="marketCap">Sort by Market Cap</option>
+          </select>
+          <button
+            onClick={toggleSortDirection}
+            className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
+          >
+            {sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+          </button>
+        </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {filtered.map((coin) => (
-          <div key={coin.symbol} className="bg-gray-800 p-4 rounded shadow">
-            <h2 className="text-lg font-semibold">{coin.name}</h2>
-            <p className="text-sm text-gray-400">{coin.symbol}</p>
-            <p className="text-green-400 text-xl">${coin.price.toFixed(2)}</p>
-          </div>
-        ))}
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-gray-800 rounded-lg shadow-md">
+          <thead>
+            <tr className="text-left">
+              <th className="p-4">Coin</th>
+              <th className="p-4">Price</th>
+              <th className="p-4">Change (24h)</th>
+              <th className="p-4">Market Cap</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedCoins.length > 0 ? (
+              sortedCoins.map((coin, i) => (
+                <tr key={i} className="border-b hover:bg-gray-700">
+                  <td className="p-4 flex items-center">
+                    {coin.ImageUrl && (
+                      <img
+                        src={`https://www.cryptocompare.com${coin.ImageUrl}`}
+                        alt={coin.CoinName}
+                        className="w-8 h-8 rounded mr-4"
+                      />
+                    )}
+                    <span>{coin.CoinName} ({coin.Symbol})</span>
+                  </td>
+                  <td className="p-4">
+                    {prices[coin.Symbol]?.USD ? `$${prices[coin.Symbol].USD}` : 'Loading...'}
+                  </td>
+                  <td className="p-4">
+                    {/* Placeholder for 24h change */}
+                    {Math.random() > 0.5 ? '+5.2%' : '-2.4%'}
+                  </td>
+                  <td className="p-4">
+                    {/* Placeholder for market cap */}
+                    {Math.random() > 0.5 ? '$10B' : '$5B'}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="p-4 text-center">No coins available.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   )

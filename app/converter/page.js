@@ -28,7 +28,11 @@ export default function ConverterPage() {
           }
         })
         .then((res) => {
-          setConverted(res.data[toCoin] * amount)
+          if (res.data[toCoin]) {
+            setConverted(res.data[toCoin] * amount)
+          } else {
+            setConverted('Error fetching data')
+          }
         })
     }
   }, [fromCoin, toCoin, amount])
@@ -36,7 +40,7 @@ export default function ConverterPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Coin Converter</h1>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="flex gap-4 mb-4">
         <input
           type="number"
           value={amount}

@@ -7,16 +7,20 @@ export default function NewsPage() {
   const [news, setNews] = useState([])
 
   useEffect(() => {
-    axios
-      .get('https://api.coindesk.com/v1/news')
-      .then((res) => {
-        if (Array.isArray(res.data)) {
-          setNews(res.data)
+    const fetchNews = async () => {
+      try {
+        const response = await axios.get(
+          `https://min-api.cryptocompare.com/data/v2/news/?lang=EN&apiKey=664c6e6238f8fea8752b1c0b10fbe1a36497b9d0379ae92f71c7a2f8f1a6d573`
+        )
+        if (response.data.Data) {
+          setNews(response.data.Data)
         }
-      })
-      .catch(() => {
-        setNews([])
-      })
+      } catch (error) {
+        console.error('Error fetching news:', error)
+      }
+    }
+
+    fetchNews()
   }, [])
 
   return (
@@ -29,16 +33,21 @@ export default function NewsPage() {
               key={i}
               href={article.url || '#'}
               target="_blank"
+              rel="noopener noreferrer"
               className="bg-gray-800 p-4 rounded hover:bg-gray-700 transition block"
             >
+              {article.imageurl && (
+                <img
+                  src={`https://www.cryptocompare.com${article.imageurl}`}
+                  alt={article.title}
+                  className="w-full h-40 object-cover rounded mb-4"
+                />
+              )}
               <h2 className="text-lg font-semibold mb-2">{article.title}</h2>
-              <p className="text-sm text-gray-400">
-                {article.description || 'No description available'}
-              </p>
             </a>
           ))
         ) : (
-          <p className="text-gray-400">No news available or API limit reached.</p>
+          <p className="text-gray-400">No news available.</p>
         )}
       </div>
     </div>
